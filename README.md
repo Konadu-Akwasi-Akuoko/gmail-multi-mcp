@@ -109,11 +109,12 @@ When prompted to configure the OAuth consent screen:
 
 Since the app has a "Testing" publishing status, only registered test users can authenticate:
 
-1. In the left sidebar, go to **APIs & Services** > **OAuth consent screen**
-2. Under **Test users**, click **Add users**
-3. Enter the Gmail address(es) you want to use with the MCP server
-4. You can add multiple test users if you plan to use the multi-account feature
-5. Click **Save**
+1. In the left sidebar, go to **Google Auth Platform** > **Audience**
+2. Scroll down to the **Test users** section
+3. Click **+ Add users**
+4. Enter the Gmail address(es) you want to use with the MCP server
+5. You can add multiple test users if you plan to use the multi-account feature
+6. Click **Save**
 
 ### 2. Project Setup
 
