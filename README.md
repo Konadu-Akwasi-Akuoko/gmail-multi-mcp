@@ -1,14 +1,26 @@
-# Gmail MCP Server
+# Gmail Multi-Account MCP Server
 
-A Model Context Protocol (MCP) server that enables Claude Desktop to interact with Gmail through secure OAuth 2.0 authentication. Send emails, search messages, read emails, and manage multiple Gmail accounts directly from Claude Desktop.
+A Model Context Protocol (MCP) server that enables Claude Desktop to interact with multiple Gmail accounts through secure OAuth 2.0 authentication.
 
-## Features
+This project is a fork of [AlexHramovich/gmail-mcp](https://github.com/AlexHramovich/gmail-mcp), extended with additional features inspired by [GongRzhe/Gmail-MCP-Server](https://github.com/GongRzhe/Gmail-MCP-Server). Full credit to both authors for their original work.
 
-- **Secure OAuth 2.0 Authentication** - No passwords stored, tokens auto-refresh
-- **Multiple Account Support** - Manage multiple Gmail accounts simultaneously
-- **Email Operations** - Send, search, and read emails with full Gmail API support
-- **Advanced Search** - Use Gmail's powerful search operators
-- **Real-time Integration** - Works seamlessly with Claude Desktop
+## Current Features
+
+- **Multiple Account Support** - Add, remove, and switch between multiple Gmail accounts
+- **Default Account Management** - Set a default account for quick access
+- **Send Emails** - Send emails with recipients, subject, body, CC, and BCC fields
+- **Search Emails** - Use Gmail's powerful search operators (from, subject, has:attachment, newer_than, is:unread, etc.)
+- **Read Emails** - Retrieve and read full email content by message ID
+- **Secure OAuth 2.0 Authentication** - No passwords stored; tokens auto-refresh
+- **MCP Inspector** - Built-in development tool for testing and debugging
+
+## Planned Features
+
+- Attachment support (send and download)
+- Filter management (create, update, delete Gmail filters)
+- Batch operations (bulk archive, delete, label)
+- Label management (create, rename, delete, apply labels)
+- HTML email support (rich-text compose and rendering)
 
 ## Quick Start
 
@@ -33,43 +45,6 @@ A Model Context Protocol (MCP) server that enables Claude Desktop to interact wi
    Send an email to john@example.com with subject "Hello" and body "Testing Gmail MCP"
    ```
 
-## Architecture
-
-Built with TypeScript and follows MCP specifications:
-
-- **Entry Point**: `src/index.ts` - Main MCP server setup and tool definitions
-- **Gmail Client**: `src/gmail-client.ts` - Gmail API wrapper with OAuth authentication
-- **Authentication**: `src/auth.ts` - OAuth 2.0 credential management
-- **Types**: `src/types.ts` - TypeScript interfaces and type definitions
-
-## Development
-
-```bash
-# Development mode with hot reload
-npm run dev
-
-# Test with MCP Inspector
-npm run inspect
-
-# Build for production
-npm run build
-```
-
-## Security
-
-- Uses minimal required Gmail scopes (read and send only)
-- Tokens stored locally with automatic refresh
-- No email content stored permanently
-- All operations performed locally
-
----
-
-# Complete User Guide
-
-## Overview
-
-This Gmail MCP Server allows Claude Desktop to interact with your Gmail account through secure OAuth 2.0 authentication. You can send emails, search messages, read emails, and manage multiple Gmail accounts.
-
 ## Prerequisites
 
 - **Node.js** (version 18 or higher)
@@ -86,18 +61,17 @@ This Gmail MCP Server allows Claude Desktop to interact with your Gmail account 
    - Create a new project or select an existing one
 
 2. **Enable Gmail API**:
-   - Navigate to "APIs & Services" → "Library"
+   - Navigate to "APIs & Services" > "Library"
    - Search for "Gmail API" and enable it
 
 3. **Create OAuth 2.0 Credentials**:
-   - Go to "APIs & Services" → "Credentials"
-   - Click "Create Credentials" → "OAuth 2.0 Client IDs"
+   - Go to "APIs & Services" > "Credentials"
+   - Click "Create Credentials" > "OAuth 2.0 Client IDs"
    - Choose "Desktop application"
    - Download the credentials JSON file
-   - **Important**: This file will need to be placed in Claude Desktop's directory later
 
 4. **Configure OAuth Consent Screen**:
-   - Go to "APIs & Services" → "OAuth consent screen"
+   - Go to "APIs & Services" > "OAuth consent screen"
    - Add your email as a test user
    - Set scopes: `https://www.googleapis.com/auth/gmail.readonly`, `https://www.googleapis.com/auth/gmail.send`
 
@@ -105,8 +79,8 @@ This Gmail MCP Server allows Claude Desktop to interact with your Gmail account 
 
 1. **Clone and Install**:
    ```bash
-   git clone <repository-url>
-   cd gmail-mcp
+   git clone https://github.com/Konadu-Akwasi-Akuoko/gmail-multi-mcp.git
+   cd gmail-multi-mcp
    npm install
    ```
 
@@ -117,7 +91,7 @@ This Gmail MCP Server allows Claude Desktop to interact with your Gmail account 
      - **macOS**: `~/Library/Application Support/Claude/`
      - **Windows**: `%APPDATA%\Claude\`
      - **Linux**: `~/.config/claude/`
-   - **Important**: Never commit this file to version control
+   - Never commit this file to version control
 
 3. **Build the Project**:
    ```bash
@@ -143,143 +117,72 @@ This Gmail MCP Server allows Claude Desktop to interact with your Gmail account 
      "mcpServers": {
        "gmail": {
          "command": "node",
-         "args": ["/absolute/path/to/your/gmail-mcp/build/index.js"]
+         "args": ["/absolute/path/to/your/gmail-multi-mcp/build/index.js"]
        }
      }
    }
    ```
-   Replace `/absolute/path/to/your/gmail-mcp/` with the actual path to your project.
+   Replace `/absolute/path/to/your/gmail-multi-mcp/` with the actual path to your project.
 
-3. **Restart Claude Desktop**:
-   - Close and reopen Claude Desktop
-   - The Gmail MCP server should now be available
+3. **Restart Claude Desktop** - the Gmail MCP server should now be available.
 
 ## First-Time Authentication
 
 When you first use Gmail tools through Claude Desktop:
 
-1. **Browser Authentication**:
-   - A browser window will open automatically
-   - Sign in with your Gmail account
-   - Grant the requested permissions
-
-2. **Token Storage**:
-   - Authentication tokens are stored in the `accounts/` directory within Claude Desktop's directory
-   - These tokens auto-refresh and are valid for 6 months of inactivity
+1. A browser window will open automatically
+2. Sign in with your Gmail account and grant the requested permissions
+3. Authentication tokens are stored in the `accounts/` directory within Claude Desktop's directory
+4. Tokens auto-refresh and are valid for 6 months of inactivity
 
 ## Available Tools
 
 ### Email Operations
 
-**Send Email**:
-```
-Send an email to john@example.com with subject "Meeting Tomorrow" and body "Don't forget our meeting at 2 PM"
-```
-
-**Search Emails**:
-```
-Search for emails from support@company.com in the last week
-```
-
-**Read Email**:
-```
-Read the email with message ID [message-id]
-```
+| Tool | Description |
+|------|-------------|
+| `send_email` | Send an email with to, subject, body, cc, bcc fields |
+| `search_emails` | Search emails using Gmail search operators |
+| `read_email` | Read a specific email by message ID |
 
 ### Account Management
 
-**List Accounts**:
-```
-Show me all configured Gmail accounts
-```
+| Tool | Description |
+|------|-------------|
+| `list_accounts` | List all configured Gmail accounts |
+| `add_account` | Add a new Gmail account |
+| `remove_account` | Remove a configured Gmail account |
+| `set_default_account` | Set the default Gmail account |
 
-**Add Account**:
-```
-Add Gmail account jane@example.com
-```
+## Development
 
-**Remove Account**:
-```
-Remove Gmail account old@example.com
-```
+```bash
+# Development mode with hot reload
+npm run dev
 
-**Set Default Account**:
-```
-Set primary@example.com as the default account
-```
+# Test with MCP Inspector
+npm run inspect
 
-## Usage Examples
-
-### Basic Email Operations
-
-1. **Send a simple email**:
-   ```
-   Send an email to team@company.com with subject "Project Update" and tell them the project is on track
-   ```
-
-2. **Search for recent emails**:
-   ```
-   Find all emails from my manager in the last 3 days
-   ```
-
-3. **Read a specific email**:
-   ```
-   Read the latest email from notifications@github.com
-   ```
-
-### Multi-Account Usage
-
-1. **Send from specific account**:
-   ```
-   Send an email from work@company.com to client@example.com about the project status
-   ```
-
-2. **Search in specific account**:
-   ```
-   Search for invoices in my personal@gmail.com account
-   ```
-
-### Advanced Gmail Search
-
-Gmail search queries support operators like:
-- `from:sender@example.com`
-- `subject:meeting`
-- `has:attachment`
-- `newer_than:7d`
-- `is:unread`
-
-Example:
-```
-Search for unread emails with attachments from the last week
+# Build for production
+npm run build
 ```
 
-## Security & Privacy
+## Architecture
 
-### Authentication Security
-- Uses OAuth 2.0 with minimal required scopes
-- Tokens stored locally in encrypted format
-- No passwords stored anywhere
-- Automatic token refresh
+Built with TypeScript and follows MCP specifications:
 
-### Data Privacy
-- No email content is stored permanently
-- All operations are performed locally
-- No data sent to third parties
-- Audit logs available in Claude Desktop
-
-### Best Practices
-- Set restrictive file permissions on `credentials.json` in Claude Desktop's directory
-- Regularly review OAuth consent screen
-- Remove unused accounts
-- Monitor token usage in Google Cloud Console
-- Keep `credentials.json` secure - it's stored in Claude Desktop's directory for access by the MCP server
+- **Entry Point**: `src/index.ts` - MCP server setup and tool definitions
+- **Gmail Client**: `src/gmail-client.ts` - Gmail API wrapper with OAuth authentication
+- **Account Manager**: `src/account-manager.ts` - Multi-account management
+- **Authentication**: `src/auth.ts` - OAuth 2.0 credential management
+- **Types**: `src/types.ts` - TypeScript interfaces and type definitions
 
 ## Troubleshooting
 
 ### Common Issues
 
 **"No account specified and no default account set"**:
-- Solution: Add an account using `add_account` tool or set a default account
+- Add an account using the `add_account` tool or set a default account
 
 **"Authentication failed"**:
 - Check if `credentials.json` exists in Claude Desktop's directory (not the project directory)
@@ -315,11 +218,11 @@ npm run dev
 
 **Project Directory**:
 ```
-gmail-mcp/
+gmail-multi-mcp/
 ├── build/              # Compiled JavaScript (auto-generated)
 ├── src/                # TypeScript source code
 ├── package.json        # Project dependencies
-└── CLAUDE.md          # Project instructions for Claude
+└── CLAUDE.md           # Project instructions for Claude
 ```
 
 **Claude Desktop Directory** (where credentials.json goes):
@@ -332,6 +235,13 @@ gmail-mcp/
 └── claude_desktop_config.json  # Claude Desktop configuration
 ```
 
+## Security
+
+- Uses minimal required Gmail scopes (read and send only)
+- Tokens stored locally with automatic refresh
+- No email content stored permanently
+- All operations performed locally
+
 ## Limitations
 
 - **Rate limits**: Gmail API has daily quotas
@@ -340,22 +250,11 @@ gmail-mcp/
 - **File attachments**: Not currently supported for sending
 - **HTML emails**: Limited formatting support
 
-## Getting Help
+## License
 
-If you encounter issues:
+MIT
 
-1. Check the troubleshooting section above
-2. Test with the MCP Inspector (`npm run inspect`)
-3. Review Google Cloud Console for API quotas and errors
-4. Check Claude Desktop logs for MCP server messages
+## Credits
 
-## Advanced Configuration
-
-### Custom Scopes
-Modify the scopes in `src/auth.ts` if you need additional Gmail permissions.
-
-### Multiple Projects
-You can run multiple instances for different Google Cloud projects by using different configuration names in Claude Desktop.
-
-### Development
-See `CLAUDE.md` for development guidelines and architecture details.
+- [AlexHramovich/gmail-mcp](https://github.com/AlexHramovich/gmail-mcp) - Original Gmail MCP server
+- [GongRzhe/Gmail-MCP-Server](https://github.com/GongRzhe/Gmail-MCP-Server) - Additional feature inspiration
