@@ -31,8 +31,8 @@ This project is a fork of [AlexHramovich/gmail-mcp](https://github.com/AlexHramo
 
 2. **Install and Build**:
    ```bash
-   npm install
-   npm run build
+   bun install
+   bun run build
    ```
 
 3. **Configure Claude Desktop**:
@@ -47,7 +47,7 @@ This project is a fork of [AlexHramovich/gmail-mcp](https://github.com/AlexHramo
 
 ## Prerequisites
 
-- **Node.js** (version 18 or higher)
+- **Bun** (latest version)
 - **Claude Desktop** application installed
 - **Gmail account** with API access enabled
 - **Google Cloud Console** project with Gmail API enabled
@@ -81,7 +81,7 @@ This project is a fork of [AlexHramovich/gmail-mcp](https://github.com/AlexHramo
    ```bash
    git clone https://github.com/Konadu-Akwasi-Akuoko/gmail-multi-mcp.git
    cd gmail-multi-mcp
-   npm install
+   bun install
    ```
 
 2. **Add Google Credentials**:
@@ -95,12 +95,12 @@ This project is a fork of [AlexHramovich/gmail-mcp](https://github.com/AlexHramo
 
 3. **Build the Project**:
    ```bash
-   npm run build
+   bun run build
    ```
 
 4. **Test the Setup**:
    ```bash
-   npm run inspect
+   bun run inspect
    ```
    This opens the MCP Inspector for testing tools before connecting to Claude Desktop.
 
@@ -116,8 +116,8 @@ This project is a fork of [AlexHramovich/gmail-mcp](https://github.com/AlexHramo
    {
      "mcpServers": {
        "gmail": {
-         "command": "node",
-         "args": ["/absolute/path/to/your/gmail-multi-mcp/build/index.js"]
+         "command": "bun",
+         "args": ["/absolute/path/to/your/gmail-multi-mcp/src/index.ts"]
        }
      }
    }
@@ -158,13 +158,16 @@ When you first use Gmail tools through Claude Desktop:
 
 ```bash
 # Development mode with hot reload
-npm run dev
+bun run dev
 
 # Test with MCP Inspector
-npm run inspect
+bun run inspect
 
 # Build for production
-npm run build
+bun run build
+
+# Type-check without emitting
+bun run typecheck
 ```
 
 ## Architecture
@@ -202,12 +205,12 @@ Built with TypeScript and follows MCP specifications:
 
 **Test tools without Claude Desktop**:
 ```bash
-npm run inspect
+bun run inspect
 ```
 
 **Development mode with hot reload**:
 ```bash
-npm run dev
+bun run dev
 ```
 
 **View server logs**:

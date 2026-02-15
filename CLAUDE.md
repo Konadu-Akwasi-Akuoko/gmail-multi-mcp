@@ -12,22 +12,24 @@ This is a Gmail MCP (Model Context Protocol) Server built in TypeScript. It prov
 - `googleapis`: Google's official Node.js client library for Gmail API
 - `@google-cloud/local-auth`: Google's OAuth 2.0 client for desktop applications
 - `zod`: Schema validation for tool parameters
-- `tsx`: TypeScript execution for development
 
 ## Development Commands
 
 ```bash
-# Build the TypeScript project
-npm run build
+# Build the project (optional - Bun runs TS natively)
+bun run build
 
 # Development mode with hot reload
-npm run dev
+bun run dev
 
 # Test the MCP server with inspector
-npm run inspect
+bun run inspect
+
+# Type-check without emitting
+bun run typecheck
 
 # Run tests
-npm run test
+bun test
 ```
 
 ## Architecture
@@ -62,12 +64,12 @@ The server exposes Gmail functionality through MCP tools:
 
 ## Development Workflow
 
-1. Install dependencies: `npm install`
+1. Install dependencies: `bun install`
 2. Place Google OAuth credentials in `credentials.json`
-3. Build: `npm run build`
-4. Test with inspector: `npm run inspect`
+3. Build (optional): `bun run build`
+4. Test with inspector: `bun run inspect`
 5. First run triggers OAuth consent flow
-6. Use `npm run dev` for development with hot reload
+6. Use `bun run dev` for development with hot reload
 
 ## Security Considerations
 
@@ -78,7 +80,7 @@ The server exposes Gmail functionality through MCP tools:
 
 ## Testing
 
-Use the MCP Inspector (`npm run inspect`) to:
+Use the MCP Inspector (`bun run inspect`) to:
 - Test tool calls interactively
 - Debug authentication issues
 - View request/response payloads
@@ -91,8 +93,8 @@ Configure in Claude Desktop's config file:
 {
   "mcpServers": {
     "gmail": {
-      "command": "node",
-      "args": ["/absolute/path/to/build/index.js"]
+      "command": "bun",
+      "args": ["/absolute/path/to/src/index.ts"]
     }
   }
 }
