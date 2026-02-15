@@ -35,9 +35,9 @@ This project is a fork of [AlexHramovich/gmail-mcp](https://github.com/AlexHramo
    bun run build
    ```
 
-3. **Configure Claude Desktop**:
-   - Place `credentials.json` in Claude Desktop's directory
-   - Update `claude_desktop_config.json` with server path
+3. **Configure Claude Desktop** (see [detailed steps below](#3-claude-desktop-integration)):
+   - Place `credentials.json` in Claude Desktop's config directory
+   - Add the MCP server entry to `claude_desktop_config.json`
    - Restart Claude Desktop
 
 4. **Start Using**:
@@ -47,7 +47,7 @@ This project is a fork of [AlexHramovich/gmail-mcp](https://github.com/AlexHramo
 
 ## Prerequisites
 
-- **Bun** (latest version)
+- **Bun** (latest version) - Install from [bun.sh](https://bun.sh)
 - **Claude Desktop** application installed
 - **Gmail account** with API access enabled
 - **Google Cloud Console** project with Gmail API enabled
@@ -84,13 +84,13 @@ When prompted to configure the OAuth consent screen:
 
 1. **App name**: Enter any name (e.g., "Gmail MCP")
 2. **User support email**: Select your email from the dropdown
-3. **App logo**: Skip this — leave it blank
+3. **App logo**: Skip this - leave it blank
 4. **Developer contact email**: Enter your email address
 5. Click **Save and continue**
 
 #### Step 5: Set Scopes (Optional)
 
-1. On the "Scopes" screen, you can skip this — just click **Save and continue**
+1. On the "Scopes" screen, you can skip this - just click **Save and continue**
 2. The required scopes are requested at runtime by the MCP server code during the OAuth flow
 
 #### Step 6: Create the OAuth Client ID
@@ -125,21 +125,12 @@ Since the app has a "Testing" publishing status, only registered test users can 
    bun install
    ```
 
-2. **Add Google Credentials**:
-   - Rename your downloaded credentials file to `credentials.json`
-   - Place it in Claude Desktop's working directory (not the project directory)
-   - **Location varies by OS**:
-     - **macOS**: `~/Library/Application Support/Claude/`
-     - **Windows**: `%APPDATA%\Claude\`
-     - **Linux**: `~/.config/claude/`
-   - Never commit this file to version control
-
-3. **Build the Project**:
+2. **Build the Project**:
    ```bash
    bun run build
    ```
 
-4. **Test the Setup**:
+3. **Test the Setup** (optional but recommended):
    ```bash
    bun run inspect
    ```
@@ -147,25 +138,115 @@ Since the app has a "Testing" publishing status, only registered test users can 
 
 ### 3. Claude Desktop Integration
 
-1. **Locate Claude Desktop Config**:
-   - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-   - **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
-   - **Linux**: `~/.config/claude/claude_desktop_config.json`
+#### Step 1: Open Claude Desktop's config directory
 
-2. **Update Configuration**:
-   ```json
-   {
-     "mcpServers": {
-       "gmail": {
-         "command": "bun",
-         "args": ["/absolute/path/to/your/gmail-multi-mcp/src/index.ts"]
-       }
-     }
-   }
-   ```
-   Replace `/absolute/path/to/your/gmail-multi-mcp/` with the actual path to your project.
+The config directory path contains a space (`Application Support`), so you need to quote or escape it:
 
-3. **Restart Claude Desktop** - the Gmail MCP server should now be available.
+**macOS:**
+```bash
+cd ~/Library/Application\ Support/Claude/
+# or
+cd "$HOME/Library/Application Support/Claude/"
+```
+
+> **Note:** Tools like `zoxide` (`z`) don't handle spaces in paths well. Use the standard `cd` command with escaping as shown above.
+
+**Windows (PowerShell):**
+```powershell
+cd "$env:APPDATA\Claude\"
+```
+
+**Linux:**
+```bash
+cd ~/.config/claude/
+```
+
+#### Step 2: Place your Google credentials
+
+Copy the `credentials.json` file you downloaded from Google Cloud Console into this directory:
+
+```bash
+# macOS example (run from the project directory)
+cp credentials.json ~/Library/Application\ Support/Claude/
+```
+
+Verify it's there:
+```bash
+ls ~/Library/Application\ Support/Claude/credentials.json
+```
+
+#### Step 3: Edit `claude_desktop_config.json`
+
+Open the config file in your editor:
+
+```bash
+# macOS
+nano ~/Library/Application\ Support/Claude/claude_desktop_config.json
+# or with VS Code
+code ~/Library/Application\ Support/Claude/claude_desktop_config.json
+```
+
+**If the file already has content** (like existing `preferences`), add `mcpServers` as a sibling key - don't overwrite what's already there. For example, if your file looks like this:
+
+```json
+{
+  "preferences": {
+    "quickEntryDictationShortcut": "off",
+    "coworkScheduledTasksEnabled": false,
+    "sidebarMode": "chat"
+  }
+}
+```
+
+Update it to:
+
+```json
+{
+  "preferences": {
+    "quickEntryDictationShortcut": "off",
+    "coworkScheduledTasksEnabled": false,
+    "sidebarMode": "chat"
+  },
+  "mcpServers": {
+    "gmail": {
+      "command": "bun",
+      "args": ["/absolute/path/to/your/gmail-multi-mcp/src/index.ts"]
+    }
+  }
+}
+```
+
+**If the file is empty or doesn't exist**, create it with:
+
+```json
+{
+  "mcpServers": {
+    "gmail": {
+      "command": "bun",
+      "args": ["/absolute/path/to/your/gmail-multi-mcp/src/index.ts"]
+    }
+  }
+}
+```
+
+> **Important:** Replace `/absolute/path/to/your/gmail-multi-mcp/` with the actual absolute path to your cloned project. You can get this by running `pwd` from inside the project directory.
+
+#### Step 4: Verify `bun` is accessible
+
+The MCP server uses `bun` to run. Make sure it's installed and in your PATH:
+
+```bash
+which bun
+# Should output something like: /Users/yourname/.bun/bin/bun
+```
+
+If `bun` is not found, install it from [bun.sh](https://bun.sh).
+
+#### Step 5: Restart Claude Desktop
+
+**Fully quit** Claude Desktop (not just close the window) and reopen it. On macOS, right-click the dock icon and choose **Quit**, or use `Cmd+Q`.
+
+After restarting, the Gmail MCP tools should be available in Claude Desktop.
 
 ## First-Time Authentication
 
@@ -173,7 +254,7 @@ When you first use Gmail tools through Claude Desktop:
 
 1. A browser window will open automatically
 2. Sign in with your Gmail account and grant the requested permissions
-3. Authentication tokens are stored in the `accounts/` directory within Claude Desktop's directory
+3. Authentication tokens are stored in the `accounts/` directory within Claude Desktop's config directory
 4. Tokens auto-refresh and are valid for 6 months of inactivity
 
 ## Available Tools
@@ -274,7 +355,7 @@ Built with TypeScript and follows MCP specifications:
 - Add an account using the `add_account` tool or set a default account
 
 **"Authentication failed"**:
-- Check if `credentials.json` exists in Claude Desktop's directory (not the project directory)
+- Check if `credentials.json` exists in Claude Desktop's config directory (not the project directory)
 - Verify Gmail API is enabled in Google Cloud Console
 - Try removing and re-adding the account
 
@@ -283,9 +364,18 @@ Built with TypeScript and follows MCP specifications:
 - Remove and re-add the account if issues persist
 
 **Claude Desktop not detecting MCP server**:
-- Verify the absolute path in config file
-- Check that the build directory exists
-- Restart Claude Desktop after config changes
+- Verify the absolute path in `claude_desktop_config.json` is correct
+- Make sure `bun` is in your PATH (`which bun`)
+- Check that `mcpServers` is a top-level key in the config, not nested inside `preferences`
+- Ensure the JSON is valid (no trailing commas, proper bracket matching)
+- Restart Claude Desktop fully (Quit + Reopen, not just close the window)
+- Check Claude Desktop logs for MCP server errors
+
+**`zoxide` / `z` can't find the Claude config directory**:
+- The path contains a space (`Application Support`). Use `cd` with quotes or backslash escaping instead:
+  ```bash
+  cd ~/Library/Application\ Support/Claude/
+  ```
 
 ### Development and Testing
 
@@ -322,14 +412,18 @@ gmail-multi-mcp/
 └── CLAUDE.md
 ```
 
-**Claude Desktop Directory** (where credentials.json goes):
+**Claude Desktop Config Directory** (where `credentials.json` goes):
 ```
-~/.config/claude/       # Linux
-~/Library/Application Support/Claude/  # macOS
-%APPDATA%\Claude\       # Windows
-├── credentials.json    # Google OAuth credentials (you provide)
-├── accounts/           # Account tokens (auto-generated when using tools)
-└── claude_desktop_config.json  # Claude Desktop configuration
+# macOS
+~/Library/Application Support/Claude/
+# Linux
+~/.config/claude/
+# Windows
+%APPDATA%\Claude\
+
+├── credentials.json                # Google OAuth credentials (you provide)
+├── accounts/                       # Account tokens (auto-generated)
+└── claude_desktop_config.json      # Claude Desktop configuration
 ```
 
 ## Security
