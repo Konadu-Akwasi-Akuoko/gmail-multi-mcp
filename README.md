@@ -23,9 +23,10 @@ This project is a fork of [AlexHramovich/gmail-mcp](https://github.com/AlexHramo
 
 ## Quick Start
 
-1. **Setup Google Cloud Console**:
+1. **Setup Google Cloud Console** (see [detailed steps below](#1-google-cloud-console-setup)):
    - Create a project and enable Gmail API
-   - Create OAuth 2.0 credentials for desktop application
+   - Create OAuth 2.0 Desktop App credentials
+   - Configure OAuth consent screen and add test users
    - Download credentials as `credentials.json`
 
 2. **Install and Build**:
@@ -55,24 +56,64 @@ This project is a fork of [AlexHramovich/gmail-mcp](https://github.com/AlexHramo
 
 ### 1. Google Cloud Console Setup
 
-1. **Create a Google Cloud Project**:
-   - Go to [Google Cloud Console](https://console.cloud.google.com/)
-   - Create a new project or select an existing one
+#### Step 1: Create a Google Cloud Project
 
-2. **Enable Gmail API**:
-   - Navigate to "APIs & Services" > "Library"
-   - Search for "Gmail API" and enable it
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Click the project dropdown at the top of the page
+3. Click **New Project**
+4. Enter a project name (e.g., "Gmail MCP Server") and click **Create**
+5. Make sure the new project is selected in the project dropdown
 
-3. **Create OAuth 2.0 Credentials**:
-   - Go to "APIs & Services" > "Credentials"
-   - Click "Create Credentials" > "OAuth 2.0 Client IDs"
-   - Choose "Desktop application"
-   - Download the credentials JSON file
+#### Step 2: Enable the Gmail API
 
-4. **Configure OAuth Consent Screen**:
-   - Go to "APIs & Services" > "OAuth consent screen"
-   - Add your email as a test user
-   - Set scopes: `https://www.googleapis.com/auth/gmail.modify`, `https://www.googleapis.com/auth/gmail.settings.basic`
+1. In the left sidebar, go to **APIs & Services** > **Library**
+2. Search for **Gmail API**
+3. Click on it and click **Enable**
+
+#### Step 3: Create OAuth 2.0 Credentials
+
+1. In the left sidebar, go to **APIs & Services** > **Credentials**
+2. Click **+ Create Credentials** at the top
+3. Select **Create credentials** > choose the **Gmail API** from the "Select an API" dropdown
+4. Under "What data will you be accessing?", select **User data** (not "Application data")
+5. Click **Next**
+
+#### Step 4: Configure the OAuth Consent Screen
+
+When prompted to configure the OAuth consent screen:
+
+1. **App name**: Enter any name (e.g., "Gmail MCP")
+2. **User support email**: Select your email from the dropdown
+3. **App logo**: Skip this — leave it blank
+4. **Developer contact email**: Enter your email address
+5. Click **Save and continue**
+
+#### Step 5: Set Scopes (Optional)
+
+1. On the "Scopes" screen, you can skip this — just click **Save and continue**
+2. The required scopes are requested at runtime by the MCP server code during the OAuth flow
+
+#### Step 6: Create the OAuth Client ID
+
+1. On the "OAuth Client ID" screen, select **Desktop app** as the application type
+2. Enter a name (e.g., "Gmail MCP Desktop Client") or leave the default
+3. Click **Create**
+
+#### Step 7: Download Credentials
+
+1. Click the **Download** button to download the credentials JSON file
+2. Rename the downloaded file to `credentials.json`
+3. Click **Done**
+
+#### Step 8: Add Test Users
+
+Since the app has a "Testing" publishing status, only registered test users can authenticate:
+
+1. In the left sidebar, go to **APIs & Services** > **OAuth consent screen**
+2. Under **Test users**, click **Add users**
+3. Enter the Gmail address(es) you want to use with the MCP server
+4. You can add multiple test users if you plan to use the multi-account feature
+5. Click **Save**
 
 ### 2. Project Setup
 
