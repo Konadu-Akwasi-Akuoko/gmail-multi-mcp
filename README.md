@@ -4,23 +4,22 @@ A Model Context Protocol (MCP) server that enables Claude Desktop to interact wi
 
 This project is a fork of [AlexHramovich/gmail-mcp](https://github.com/AlexHramovich/gmail-mcp), extended with additional features inspired by [GongRzhe/Gmail-MCP-Server](https://github.com/GongRzhe/Gmail-MCP-Server). Full credit to both authors for their original work.
 
-## Current Features
+## Features
 
 - **Multiple Account Support** - Add, remove, and switch between multiple Gmail accounts
 - **Default Account Management** - Set a default account for quick access
-- **Send Emails** - Send emails with recipients, subject, body, CC, and BCC fields
+- **Send Emails** - Plain text, HTML, multipart, with CC/BCC and file attachments
 - **Search Emails** - Use Gmail's powerful search operators (from, subject, has:attachment, newer_than, is:unread, etc.)
-- **Read Emails** - Retrieve and read full email content by message ID
+- **Read Emails** - Retrieve full email content with attachment metadata
+- **Email Modification** - Modify labels, mark as read/unread, delete messages
+- **Batch Operations** - Bulk modify labels or delete messages with configurable batch sizes
+- **Attachment Support** - Send attachments and download them with path security validation
+- **Label Management** - Create, update, delete, and list Gmail labels
+- **Filter Management** - Create, list, get, delete filters with pre-built templates
+- **Thread Replies** - Reply to email threads with In-Reply-To/References headers
 - **Secure OAuth 2.0 Authentication** - No passwords stored; tokens auto-refresh
+- **Security Hardening** - MIME header injection prevention, sensitive path blocking, path traversal protection
 - **MCP Inspector** - Built-in development tool for testing and debugging
-
-## Planned Features
-
-- Attachment support (send and download)
-- Filter management (create, update, delete Gmail filters)
-- Batch operations (bulk archive, delete, label)
-- Label management (create, rename, delete, apply labels)
-- HTML email support (rich-text compose and rendering)
 
 ## Quick Start
 
@@ -73,7 +72,7 @@ This project is a fork of [AlexHramovich/gmail-mcp](https://github.com/AlexHramo
 4. **Configure OAuth Consent Screen**:
    - Go to "APIs & Services" > "OAuth consent screen"
    - Add your email as a test user
-   - Set scopes: `https://www.googleapis.com/auth/gmail.readonly`, `https://www.googleapis.com/auth/gmail.send`
+   - Set scopes: `https://www.googleapis.com/auth/gmail.modify`, `https://www.googleapis.com/auth/gmail.settings.basic`
 
 ### 2. Project Setup
 
@@ -141,9 +140,51 @@ When you first use Gmail tools through Claude Desktop:
 
 | Tool | Description |
 |------|-------------|
-| `send_email` | Send an email with to, subject, body, cc, bcc fields |
+| `send_email` | Send emails with HTML, attachments, CC/BCC, and thread reply support |
 | `search_emails` | Search emails using Gmail search operators |
-| `read_email` | Read a specific email by message ID |
+| `read_email` | Read a specific email by message ID with attachment info |
+
+### Email Modification
+
+| Tool | Description |
+|------|-------------|
+| `modify_email` | Add or remove labels on a message |
+| `delete_email` | Permanently delete a message |
+| `mark_as_read` | Mark a message as read |
+| `mark_as_unread` | Mark a message as unread |
+
+### Batch Operations
+
+| Tool | Description |
+|------|-------------|
+| `batch_modify_emails` | Bulk add/remove labels on multiple messages |
+| `batch_delete_emails` | Bulk delete multiple messages |
+
+### Attachments
+
+| Tool | Description |
+|------|-------------|
+| `download_attachment` | Download an email attachment to disk |
+
+### Label Management
+
+| Tool | Description |
+|------|-------------|
+| `list_email_labels` | List all system and user labels |
+| `create_label` | Create a new label with visibility options |
+| `update_label` | Update a label's name or visibility |
+| `delete_label` | Delete a user-created label |
+| `get_or_create_label` | Get existing label or create if missing |
+
+### Filter Management
+
+| Tool | Description |
+|------|-------------|
+| `create_filter` | Create a filter with custom criteria and actions |
+| `list_filters` | List all Gmail filters |
+| `get_filter` | Get details of a specific filter |
+| `delete_filter` | Delete a filter by ID |
+| `create_filter_from_template` | Create from pre-built templates (fromSender, withSubject, withAttachments, largeEmails, containingText, mailingList) |
 
 ### Account Management
 
@@ -175,8 +216,11 @@ bun run typecheck
 Built with TypeScript and follows MCP specifications:
 
 - **Entry Point**: `src/index.ts` - MCP server setup and tool definitions
-- **Gmail Client**: `src/gmail-client.ts` - Gmail API wrapper with OAuth authentication
-- **Account Manager**: `src/account-manager.ts` - Multi-account management
+- **Gmail Client**: `src/gmail-client.ts` - Gmail API wrapper (send, search, read, modify, delete, batch ops, attachments)
+- **Account Manager**: `src/account-manager.ts` - Multi-account credential storage and switching
+- **Email Utils**: `src/email-utils.ts` - MIME encoding, email validation, path security, Nodemailer integration
+- **Label Manager**: `src/label-manager.ts` - CRUD operations for Gmail labels
+- **Filter Manager**: `src/filter-manager.ts` - Gmail filter CRUD and pre-built templates
 - **Authentication**: `src/auth.ts` - OAuth 2.0 credential management
 - **Types**: `src/types.ts` - TypeScript interfaces and type definitions
 
@@ -222,10 +266,18 @@ bun run dev
 **Project Directory**:
 ```
 gmail-multi-mcp/
-├── build/              # Compiled JavaScript (auto-generated)
-├── src/                # TypeScript source code
-├── package.json        # Project dependencies
-└── CLAUDE.md           # Project instructions for Claude
+├── build/                  # Compiled JavaScript (auto-generated)
+├── src/
+│   ├── index.ts            # MCP server entry point and tool definitions
+│   ├── gmail-client.ts     # Gmail API wrapper
+│   ├── account-manager.ts  # Multi-account management
+│   ├── email-utils.ts      # MIME, validation, security, Nodemailer
+│   ├── label-manager.ts    # Label CRUD operations
+│   ├── filter-manager.ts   # Filter CRUD and templates
+│   ├── auth.ts             # OAuth 2.0 credential management
+│   └── types.ts            # TypeScript interfaces
+├── package.json
+└── CLAUDE.md
 ```
 
 **Claude Desktop Directory** (where credentials.json goes):
@@ -240,18 +292,18 @@ gmail-multi-mcp/
 
 ## Security
 
-- Uses minimal required Gmail scopes (read and send only)
+- Uses minimal required Gmail scopes
 - Tokens stored locally with automatic refresh
 - No email content stored permanently
 - All operations performed locally
+- Attachment paths validated against sensitive directories (~/.ssh, ~/.aws, ~/.env, credentials, etc.)
+- MIME header injection prevention via CR/LF stripping
+- Path traversal protection on attachment downloads
 
 ## Limitations
 
 - **Rate limits**: Gmail API has daily quotas
-- **Scope limitations**: Only read and send permissions
 - **Token expiry**: Tokens expire after 6 months of inactivity
-- **File attachments**: Not currently supported for sending
-- **HTML emails**: Limited formatting support
 
 ## License
 
