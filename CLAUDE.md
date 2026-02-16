@@ -11,7 +11,9 @@ This is a Gmail MCP (Model Context Protocol) Server built in TypeScript. It prov
 - `@modelcontextprotocol/sdk`: Core MCP framework for building servers
 - `googleapis`: Google's official Node.js client library for Gmail API
 - `@google-cloud/local-auth`: Google's OAuth 2.0 client for desktop applications
-- `commander`: CLI framework for the account management tool
+- `commander`: CLI framework for the account management tool (argument mode)
+- `@clack/prompts`: Interactive terminal prompts with select menus, spinners, and styled output
+- `picocolors`: Lightweight terminal color library
 - `zod`: Schema validation for tool parameters
 - `nodemailer`: RFC 822 email construction with attachment support
 - `mime-types`: MIME type detection for attachments
@@ -28,7 +30,10 @@ bun run build:cli
 # Development mode with hot reload
 bun run dev
 
-# Run CLI directly (no build needed)
+# Run CLI in interactive mode (no args = arrow-key menu)
+bun src/cli.ts
+
+# Run CLI in argument mode (Commander.js)
 bun src/cli.ts list
 bun src/cli.ts add user@gmail.com
 bun src/cli.ts default
@@ -49,7 +54,8 @@ bun test
 The project follows a modular architecture:
 
 - **Entry Point**: `src/index.ts` - Main MCP server setup and tool definitions
-- **CLI**: `src/cli.ts` - Commander.js CLI for managing accounts from the terminal
+- **CLI**: `src/cli.ts` - Dual-mode CLI: interactive (no args) or Commander.js (with args)
+- **Interactive CLI**: `src/interactive.ts` - Arrow-key navigable menu using @clack/prompts
 - **Gmail Client**: `src/gmail-client.ts` - Gmail API wrapper (send, search, read, modify, delete, batch ops, attachments)
 - **Account Manager**: `src/account-manager.ts` - Multi-account credential storage and switching
 - **Email Utils**: `src/email-utils.ts` - MIME encoding, email validation, path security, Nodemailer integration
