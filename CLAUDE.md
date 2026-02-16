@@ -11,6 +11,7 @@ This is a Gmail MCP (Model Context Protocol) Server built in TypeScript. It prov
 - `@modelcontextprotocol/sdk`: Core MCP framework for building servers
 - `googleapis`: Google's official Node.js client library for Gmail API
 - `@google-cloud/local-auth`: Google's OAuth 2.0 client for desktop applications
+- `commander`: CLI framework for the account management tool
 - `zod`: Schema validation for tool parameters
 - `nodemailer`: RFC 822 email construction with attachment support
 - `mime-types`: MIME type detection for attachments
@@ -18,11 +19,20 @@ This is a Gmail MCP (Model Context Protocol) Server built in TypeScript. It prov
 ## Development Commands
 
 ```bash
-# Build the project (optional - Bun runs TS natively)
+# Build both MCP server and CLI (optional - Bun runs TS natively)
 bun run build
+
+# Build CLI only
+bun run build:cli
 
 # Development mode with hot reload
 bun run dev
+
+# Run CLI directly (no build needed)
+bun src/cli.ts list
+bun src/cli.ts add user@gmail.com
+bun src/cli.ts default
+bun src/cli.ts reauth user@gmail.com
 
 # Test the MCP server with inspector
 bun run inspect
@@ -39,6 +49,7 @@ bun test
 The project follows a modular architecture:
 
 - **Entry Point**: `src/index.ts` - Main MCP server setup and tool definitions
+- **CLI**: `src/cli.ts` - Commander.js CLI for managing accounts from the terminal
 - **Gmail Client**: `src/gmail-client.ts` - Gmail API wrapper (send, search, read, modify, delete, batch ops, attachments)
 - **Account Manager**: `src/account-manager.ts` - Multi-account credential storage and switching
 - **Email Utils**: `src/email-utils.ts` - MIME encoding, email validation, path security, Nodemailer integration
@@ -50,10 +61,19 @@ The project follows a modular architecture:
 ## Authentication Flow
 
 Uses OAuth 2.0 Desktop Application Flow:
-1. First run opens browser for user consent
-2. Stores refresh tokens in `token.json`
-3. Automatic token refresh for subsequent requests
-4. Requires `credentials.json` from Google Cloud Console
+1. Users run `bun src/cli.ts add <email>` from the terminal to trigger the OAuth browser flow
+2. Stores refresh tokens in `accounts/<email>/token.json`
+3. The MCP server reads pre-existing tokens (no browser flow needed at runtime)
+4. Requires `credentials.json` in the project root
+
+## Path Resolution
+
+`AccountManager` resolves its data directory in this order:
+1. Explicit `basePath` constructor parameter
+2. `GMAIL_MCP_DATA_DIR` environment variable
+3. `import.meta.dir` parent (project root) - the default
+
+Both `src/` and `build/` resolve to the same project root via `path.resolve(import.meta.dir, '..')`.
 
 ## Required Setup Files
 

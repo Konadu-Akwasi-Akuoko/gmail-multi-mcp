@@ -35,12 +35,17 @@ This project is a fork of [AlexHramovich/gmail-mcp](https://github.com/AlexHramo
    bun run build
    ```
 
-3. **Configure Claude Desktop** (see [detailed steps below](#3-claude-desktop-integration)):
-   - Place `credentials.json` in Claude Desktop's config directory
+3. **Add a Gmail account via CLI**:
+   ```bash
+   bun src/cli.ts add your-email@gmail.com
+   ```
+   This opens your browser for OAuth consent. Tokens are saved in the project's `accounts/` directory.
+
+4. **Configure Claude Desktop** (see [detailed steps below](#3-claude-desktop-integration)):
    - Add the MCP server entry to `claude_desktop_config.json`
    - Restart Claude Desktop
 
-4. **Start Using**:
+5. **Start Using**:
    ```
    Send an email to john@example.com with subject "Hello" and body "Testing Gmail MCP"
    ```
@@ -163,16 +168,16 @@ cd ~/.config/claude/
 
 #### Step 2: Place your Google credentials
 
-Copy the `credentials.json` file you downloaded from Google Cloud Console into this directory:
+Place the `credentials.json` file in the **project root directory** (not Claude Desktop's config directory):
 
 ```bash
-# macOS example (run from the project directory)
-cp credentials.json ~/Library/Application\ Support/Claude/
+# From wherever you downloaded it
+cp ~/Downloads/credentials.json /path/to/gmail-multi-mcp/
 ```
 
 Verify it's there:
 ```bash
-ls ~/Library/Application\ Support/Claude/credentials.json
+ls /path/to/gmail-multi-mcp/credentials.json
 ```
 
 #### Step 3: Edit `claude_desktop_config.json`
@@ -248,14 +253,63 @@ If `bun` is not found, install it from [bun.sh](https://bun.sh).
 
 After restarting, the Gmail MCP tools should be available in Claude Desktop.
 
+## CLI Account Management
+
+The CLI tool manages Gmail accounts separately from the MCP server. This is necessary because the MCP server runs as a background process under Claude Desktop, where a browser OAuth flow can't work.
+
+### Why a separate CLI?
+
+When Claude Desktop spawns the MCP server, `process.cwd()` resolves to Claude Desktop's own directory -- not the project root. The CLI and MCP server both use `import.meta.dir` to resolve paths relative to the source file, so they always agree on where `credentials.json` and `accounts/` live (the project root).
+
+### Commands
+
+```bash
+# Add a new Gmail account (opens browser for OAuth)
+bun src/cli.ts add user@gmail.com
+
+# List all configured accounts
+bun src/cli.ts list
+
+# Get or set the default account
+bun src/cli.ts default              # show current default
+bun src/cli.ts default user@gmail.com  # set new default
+
+# Re-authenticate an expired token
+bun src/cli.ts reauth user@gmail.com
+
+# Remove an account
+bun src/cli.ts remove user@gmail.com
+
+# Show the resolved data directory
+bun src/cli.ts path
+```
+
+### After building
+
+If you've run `bun run build`, you can also use the compiled binary:
+
+```bash
+bun build/cli.js list
+```
+
+### Environment variable
+
+Set `GMAIL_MCP_DATA_DIR` to override where the CLI and MCP server look for `credentials.json` and `accounts/`:
+
+```bash
+GMAIL_MCP_DATA_DIR=/custom/path bun src/cli.ts list
+```
+
 ## First-Time Authentication
 
-When you first use Gmail tools through Claude Desktop:
+Account setup is done via the CLI tool before connecting to Claude Desktop:
 
-1. A browser window will open automatically
-2. Sign in with your Gmail account and grant the requested permissions
-3. Authentication tokens are stored in the `accounts/` directory within Claude Desktop's config directory
-4. Tokens auto-refresh and are valid for 6 months of inactivity
+1. Run `bun src/cli.ts add your-email@gmail.com` from the project directory
+2. A browser window opens for Google OAuth consent
+3. Sign in and grant the requested permissions
+4. Authentication tokens are stored in the `accounts/` directory within the project root
+5. Tokens auto-refresh and are valid for 6 months of inactivity
+6. The MCP server reads these pre-existing tokens at runtime (no browser flow needed)
 
 ## Available Tools
 
@@ -339,6 +393,7 @@ bun run typecheck
 Built with TypeScript and follows MCP specifications:
 
 - **Entry Point**: `src/index.ts` - MCP server setup and tool definitions
+- **CLI**: `src/cli.ts` - Commander.js CLI for terminal-based account management
 - **Gmail Client**: `src/gmail-client.ts` - Gmail API wrapper (send, search, read, modify, delete, batch ops, attachments)
 - **Account Manager**: `src/account-manager.ts` - Multi-account credential storage and switching
 - **Email Utils**: `src/email-utils.ts` - MIME encoding, email validation, path security, Nodemailer integration
@@ -352,16 +407,15 @@ Built with TypeScript and follows MCP specifications:
 ### Common Issues
 
 **"No account specified and no default account set"**:
-- Add an account using the `add_account` tool or set a default account
+- Add an account using the CLI: `bun src/cli.ts add user@gmail.com`
 
 **"Authentication failed"**:
-- Check if `credentials.json` exists in Claude Desktop's config directory (not the project directory)
+- Check if `credentials.json` exists in the project root (`bun src/cli.ts path` shows the resolved directory)
 - Verify Gmail API is enabled in Google Cloud Console
-- Try removing and re-adding the account
+- Re-authenticate: `bun src/cli.ts reauth user@gmail.com`
 
 **"Token expired"**:
-- Tokens auto-refresh, but manual re-authentication may be needed
-- Remove and re-add the account if issues persist
+- Re-authenticate via CLI: `bun src/cli.ts reauth user@gmail.com`
 
 **Claude Desktop not detecting MCP server**:
 - Verify the absolute path in `claude_desktop_config.json` is correct
@@ -399,31 +453,31 @@ bun run dev
 ```
 gmail-multi-mcp/
 ├── build/                  # Compiled JavaScript (auto-generated)
+├── accounts/               # Account tokens (auto-generated by CLI)
+├── credentials.json        # Google OAuth credentials (you provide)
 ├── src/
 │   ├── index.ts            # MCP server entry point and tool definitions
+│   ├── cli.ts              # Commander.js CLI for account management
 │   ├── gmail-client.ts     # Gmail API wrapper
 │   ├── account-manager.ts  # Multi-account management
 │   ├── email-utils.ts      # MIME, validation, security, Nodemailer
 │   ├── label-manager.ts    # Label CRUD operations
 │   ├── filter-manager.ts   # Filter CRUD and templates
 │   ├── auth.ts             # OAuth 2.0 credential management
+│   ├── bun.d.ts            # Bun-specific type declarations
 │   └── types.ts            # TypeScript interfaces
 ├── package.json
 └── CLAUDE.md
 ```
 
-**Claude Desktop Config Directory** (where `credentials.json` goes):
+**Claude Desktop Config Directory** (only `claude_desktop_config.json` lives here):
 ```
 # macOS
-~/Library/Application Support/Claude/
+~/Library/Application Support/Claude/claude_desktop_config.json
 # Linux
-~/.config/claude/
+~/.config/claude/claude_desktop_config.json
 # Windows
-%APPDATA%\Claude\
-
-├── credentials.json                # Google OAuth credentials (you provide)
-├── accounts/                       # Account tokens (auto-generated)
-└── claude_desktop_config.json      # Claude Desktop configuration
+%APPDATA%\Claude\claude_desktop_config.json
 ```
 
 ## Security
