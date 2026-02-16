@@ -5,3 +5,4 @@ token.json
 .env
 *.log
 accounts/
+.DS_Store
