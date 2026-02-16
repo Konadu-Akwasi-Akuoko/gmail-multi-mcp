@@ -16,15 +16,29 @@ export interface AccountsRegistry {
 }
 
 export class AccountManager {
-  private readonly ACCOUNTS_DIR = path.join(process.cwd(), 'accounts');
-  private readonly CONFIG_PATH = path.join(this.ACCOUNTS_DIR, 'config.json');
-  private readonly CREDENTIALS_PATH = path.join(process.cwd(), 'credentials.json');
+  private readonly basePath: string;
+  private readonly ACCOUNTS_DIR: string;
+  private readonly CONFIG_PATH: string;
+  private readonly CREDENTIALS_PATH: string;
   private readonly SCOPES = [
     'https://www.googleapis.com/auth/gmail.readonly',
     'https://www.googleapis.com/auth/gmail.send',
     'https://www.googleapis.com/auth/gmail.modify',
     'https://www.googleapis.com/auth/gmail.settings.basic'
   ];
+
+  constructor(basePath?: string) {
+    this.basePath = basePath
+      ?? process.env['GMAIL_MCP_DATA_DIR']
+      ?? path.resolve(import.meta.dir, '..');
+    this.ACCOUNTS_DIR = path.join(this.basePath, 'accounts');
+    this.CONFIG_PATH = path.join(this.ACCOUNTS_DIR, 'config.json');
+    this.CREDENTIALS_PATH = path.join(this.basePath, 'credentials.json');
+  }
+
+  getBasePath(): string {
+    return this.basePath;
+  }
 
   async ensureAccountsDirectory(): Promise<void> {
     try {
@@ -136,7 +150,7 @@ export class AccountManager {
     try {
       const content = await fs.readFile(tokenPath, 'utf8');
       const credentials = JSON.parse(content);
-      const auth = google.auth.fromJSON(credentials) as any;
+      const auth = google.auth.fromJSON(credentials) as unknown as OAuth2Client;
       
       // Update last used
       registry.accounts[email].lastUsed = new Date().toISOString();
@@ -162,6 +176,23 @@ export class AccountManager {
     
     const tokenPath = path.join(this.ACCOUNTS_DIR, email, 'token.json');
     await fs.writeFile(tokenPath, payload);
+  }
+
+  async reauthAccount(email: string): Promise<void> {
+    const registry = await this.loadRegistry();
+
+    if (!registry.accounts[email]) {
+      throw new Error(`Account ${email} not found`);
+    }
+
+    const client = await authenticate({
+      scopes: this.SCOPES,
+      keyfilePath: this.CREDENTIALS_PATH,
+    });
+
+    if (client.credentials) {
+      await this.saveAccountToken(email, client);
+    }
   }
 
   async accountExists(email: string): Promise<boolean> {
