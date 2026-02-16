@@ -1,12 +1,13 @@
 #!/usr/bin/env bun
 import { Command } from 'commander';
 import { AccountManager } from './account-manager.js';
+import { runInteractive } from './interactive.js';
 
 const program = new Command();
 
 program
-  .name('gmail-accounts')
-  .description('Manage Gmail accounts for the Gmail MCP server')
+  .name('gw-accounts')
+  .description('Google Workspace MCP - Account Manager')
   .version('2.0.1');
 
 program
@@ -127,4 +128,9 @@ program
     console.log(manager.getBasePath());
   });
 
-program.parse();
+const args = process.argv.slice(2);
+if (args.length === 0) {
+  await runInteractive();
+} else {
+  program.parse();
+}

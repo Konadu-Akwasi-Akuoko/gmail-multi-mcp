@@ -1,12 +1,12 @@
 {
-  "name": "gmail-mcp-server",
+  "name": "google-workspace-mcp",
   "version": "2.0.1",
   "type": "module",
-  "description": "Gmail MCP Server for personal use",
+  "description": "Google Workspace MCP Server with interactive account management",
   "main": "build/index.js",
   "bin": {
-    "gmail-mcp": "./build/index.js",
-    "gmail-accounts": "./build/cli.js"
+    "gw-mcp": "./build/index.js",
+    "gw-accounts": "./build/cli.js"
   },
   "scripts": {
     "build": "bun build src/index.ts --outdir build --target bun && bun build src/cli.ts --outdir build --target bun",
@@ -18,12 +18,14 @@
     "test": "bun test"
   },
   "dependencies": {
+    "@clack/prompts": "^1.0.1",
     "@google-cloud/local-auth": "^3.0.1",
     "@modelcontextprotocol/sdk": "^1.26.0",
     "commander": "^14.0.3",
     "googleapis": "^171.4.0",
     "mime-types": "^3.0.2",
     "nodemailer": "^8.0.1",
+    "picocolors": "^1.1.1",
     "zod": "3"
   },
   "devDependencies": {
