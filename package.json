@@ -5,11 +5,14 @@
   "description": "Gmail MCP Server for personal use",
   "main": "build/index.js",
   "bin": {
-    "gmail-mcp": "./build/index.js"
+    "gmail-mcp": "./build/index.js",
+    "gmail-accounts": "./build/cli.js"
   },
   "scripts": {
-    "build": "bun build src/index.ts --outdir build --target bun",
+    "build": "bun build src/index.ts --outdir build --target bun && bun build src/cli.ts --outdir build --target bun",
+    "build:cli": "bun build src/cli.ts --outdir build --target bun",
     "dev": "bun --watch src/index.ts",
+    "dev:cli": "bun src/cli.ts",
     "inspect": "bunx @modelcontextprotocol/inspector bun src/index.ts",
     "typecheck": "tsc --noEmit",
     "test": "bun test"
@@ -17,6 +20,7 @@
   "dependencies": {
     "@google-cloud/local-auth": "^3.0.1",
     "@modelcontextprotocol/sdk": "^1.26.0",
+    "commander": "^14.0.3",
     "googleapis": "^171.4.0",
     "mime-types": "^3.0.2",
     "nodemailer": "^8.0.1",
