@@ -8,7 +8,7 @@ const program = new Command();
 program
   .name('gw-accounts')
   .description('Google Workspace MCP - Account Manager')
-  .version('2.0.1');
+  .version('2.1.0');
 
 program
   .command('add')

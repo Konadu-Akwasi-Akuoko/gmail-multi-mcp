@@ -1,6 +1,6 @@
 {
   "name": "google-workspace-mcp",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "type": "module",
   "description": "Google Workspace MCP Server with interactive account management",
   "main": "build/index.js",

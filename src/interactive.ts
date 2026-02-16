@@ -2,7 +2,7 @@ import * as p from '@clack/prompts';
 import pc from 'picocolors';
 import { AccountManager } from './account-manager.js';
 
-const VERSION = '2.0.1';
+const VERSION = '2.1.0';
 
 function printHeader(): void {
   console.log();
